@@ -10,6 +10,7 @@ const nav = [
   { to: '/teachers', label: 'शिक्षक', icon: '👩‍🏫' },
   { to: '/attendance', label: 'हजेरी', icon: '📅' },
   { to: '/evaluation', label: 'मूल्यमापन', icon: '📝' },
+  { to: '/nipun', label: 'निपुण भारत', icon: '📖' },
   { to: '/semester-report', label: 'सत्र अहवाल', icon: '📊' },
   { to: '/report-card', label: 'निकालपत्रक', icon: '🧾' },
   { to: '/grades', label: 'श्रेणी', icon: '🏅' },

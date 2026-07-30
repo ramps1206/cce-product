@@ -8,7 +8,7 @@ import { syncNow } from './sync'
  * syncs it up to Postgres.
  */
 const ARRAY_PARTS = ['students', 'classes', 'teachers', 'generalRegister', 'scholarships']
-const MAP_PARTS = ['evaluations', 'attendance', 'descriptiveNotes', 'bharansh']
+const MAP_PARTS = ['evaluations', 'attendance', 'descriptiveNotes', 'bharansh', 'nipun']
 const SCALAR_PARTS = ['school', 'workingDays', 'settings']
 
 export interface ImportResult {
