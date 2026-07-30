@@ -46,6 +46,42 @@ GET  /api/sync/pull?since=<iso>            POST /api/sync/push
 GET  /api/export/students.xlsx?classId=
 ```
 
+## Deployment (Fly.io app + Neon Postgres — no GitHub, no card)
+
+One app: the backend serves the built React SPA (single origin, no CORS). The
+database is Neon's free tier (no credit card). Deploys from this folder with a
+remote builder, so **local Docker is not required**.
+
+```bash
+# 1. Neon (browser, free, no card): https://neon.tech
+#    New Project -> region: AWS Asia Pacific (Singapore) -> copy the connection string, e.g.
+#    postgresql://<user>:<pass>@ep-xxx-123.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+
+# 2. Install flyctl + login (one-time)
+brew install flyctl            # or: curl -L https://fly.io/install.sh | sh
+fly auth login                 # opens browser
+
+# 3. Create the app
+cd ~/cce-product
+fly apps create cce-product
+
+# 4. Secrets — datasource from Neon (split into 3) + prod JWT key.
+#    Take host/db from the Neon string; KEEP ?sslmode=require on the JDBC URL.
+fly secrets set \
+  SPRING_DATASOURCE_URL="jdbc:postgresql://ep-xxx-123.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" \
+  SPRING_DATASOURCE_USERNAME="<neon-user>" \
+  SPRING_DATASOURCE_PASSWORD="<neon-pass>" \
+  CCE_JWT_SECRET="$(openssl rand -base64 48)" \
+  --app cce-product
+
+# 5. Deploy + open
+fly deploy --remote-only
+fly open                       # https://cce-product.fly.dev
+```
+
+Flyway runs the 13-table migration on first boot against Neon. Neon requires SSL —
+that's why the JDBC URL keeps `?sslmode=require` (the bundled pg driver handles it).
+
 ## Features
 
 - **Auth & licensing**: JWT, PIN unlock, 15-day trial, device limits, platform gating, server-side tier enforcement (standard/pro/premium).

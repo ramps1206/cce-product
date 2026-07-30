@@ -25,6 +25,10 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    host: true,
+    // Allow tunnel hostnames (e.g. *.lhr.life, *.trycloudflare.com) through
+    // Vite's dev-server host check so the app is reachable over a tunnel.
+    allowedHosts: true,
     proxy: {
       // Dev: forward API calls to the Spring Boot backend.
       '/api': 'http://localhost:8080',

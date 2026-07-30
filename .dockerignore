@@ -1,0 +1,14 @@
+# Build outputs & deps (rebuilt inside the image)
+**/target
+**/node_modules
+**/dist
+backend/src/main/resources/static
+
+# Local-only / secrets / notes
+migration
+LOCAL_*
+.git
+.idea
+.vscode
+*.iml
+.DS_Store

@@ -40,7 +40,9 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/ping", "/actuator/**", "/error").permitAll()
-                .anyRequest().authenticated())
+                // Protect the API; everything else (SPA shell + static assets) is public.
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll())
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((req, res, e) ->
                     res.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "unauthorized")))
