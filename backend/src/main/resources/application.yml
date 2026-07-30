@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cce-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cce_dev}
+    username: ${SPRING_DATASOURCE_USERNAME:cce}
+    password: ${SPRING_DATASOURCE_PASSWORD:cce_local_dev}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+# App config (env-overridable for prod)
+cce:
+  jwt:
+    # Dev-only secret; MUST be overridden via CCE_JWT_SECRET in any deployed env.
+    secret: ${CCE_JWT_SECRET:dev-only-change-me-please-32-bytes-minimum-secret-key}
+    access-token-minutes: 720
+  cors:
+    allowed-origins: ${CCE_CORS_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.cce: DEBUG

@@ -1,0 +1,27 @@
+# Local-only markdown notes (per house rule)
+LOCAL_*
+
+# Java / Maven
+backend/target/
+*.class
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Migration secrets / dumps (never commit)
+migration/serviceAccountKey.json
+migration/firestore_dump.json
+migration/*.dump.json
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.iml
