@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Project-local Maven settings: resolve from Maven Central directly.
-     The user's global ~/.m2/settings.xml mirrors * to the internal AlphaSense
-     Nexus (VPN-only); this file bypasses that for this personal project. -->
+<!-- Project-local Maven settings: resolve from Maven Central directly, in case
+     the machine's global settings.xml points at a private mirror. -->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
   <localRepository>${user.home}/.m2/repository</localRepository>
   <mirrors/>
