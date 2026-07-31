@@ -7,6 +7,7 @@ import { syncNow } from '../lib/sync'
 // Top-level navigation, echoing the original app's sidebar.
 const NAV_MAIN = [
   { to: '/', label: 'मुखपृष्ठ', icon: '🏠', end: true },
+  { to: '/school', label: 'शाळा माहिती', icon: '🏫' },
   { to: '/classes', label: 'वर्ग', icon: '🏫' },
   { to: '/students', label: 'विद्यार्थी', icon: '👧' },
   { to: '/teachers', label: 'शिक्षक', icon: '👩‍🏫' },

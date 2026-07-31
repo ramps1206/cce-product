@@ -11,6 +11,7 @@ import Evaluation from './pages/Evaluation'
 import Nipun from './pages/Nipun'
 import Grades from './pages/Grades'
 import Settings from './pages/Settings'
+import SchoolInfo from './pages/SchoolInfo'
 import Scholarships from './pages/Scholarships'
 import GeneralRegister from './pages/GeneralRegister'
 import ReportCard from './pages/ReportCard'
@@ -34,6 +35,7 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/school" element={<SchoolInfo />} />
         <Route path="/classes" element={<Classes />} />
         <Route path="/students" element={<Students />} />
         <Route path="/teachers" element={<Teachers />} />
