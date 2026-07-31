@@ -4,6 +4,7 @@ import { listPart, nextId, putItem, removeItem } from '../lib/store'
 import { useCollection } from '../lib/useCollection'
 import { syncNow } from '../lib/sync'
 import { PageHeader, TableCard, Td, Th, btnGhost, btnPrimary } from '../components/ui'
+import { clsName } from '../lib/domain'
 
 // Faithful to the original app's student record (openStudentModal / saveStudent).
 interface Student {
@@ -46,8 +47,6 @@ const DISABILITY_TYPES = [
   'सिकल सेल आजार (Sickle Cell Disease)', 'बहुविकलांगत्व (Multiple Disabilities)', 'आम्ल हल्ला पीडित (Acid Attack Victim)',
   "पार्किन्सन्स आजार (Parkinson's Disease)", 'इतर (Other)',
 ]
-
-const clsName = (c: any) => `${c?.std || ''}${c?.div ? ' ' + c.div : ''}`.trim() || '—'
 
 export default function Students() {
   const [rows, setRows] = useState<{ key: string; payload: Student }[]>([])
