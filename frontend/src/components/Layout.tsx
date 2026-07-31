@@ -12,6 +12,8 @@ const NAV_MAIN = [
   { to: '/students', label: 'विद्यार्थी', icon: '👧' },
   { to: '/teachers', label: 'शिक्षक', icon: '👩‍🏫' },
   { to: '/attendance', label: 'हजेरी', icon: '📅' },
+  { to: '/working-days', label: 'कामाचे दिवस', icon: '📆' },
+  { to: '/bharansh', label: 'भारांश', icon: '⚖️' },
   { to: '/evaluation', label: 'मूल्यमापन', icon: '📝' },
   { to: '/nipun', label: 'निपुण महाराष्ट्र', icon: '🎯' },
   { to: '/learning-outcomes', label: 'अध्ययन निष्पत्ती', icon: '📚' },
@@ -20,9 +22,16 @@ const NAV_MAIN = [
   { to: '/grades', label: 'श्रेणी', icon: '🏅' },
   { to: '/general-register', label: 'जनरल रजिस्टर', icon: '📔' },
   { to: '/caste-wise', label: 'विद्यार्थी अतिरिक्त माहिती', icon: '📇' },
+  { to: '/id-card', label: 'ID Card', icon: '🪪' },
+  { to: '/bonafide', label: 'बोनाफाईड', icon: '📜' },
+  { to: '/tc', label: 'TC दाखला', icon: '📄' },
   { to: '/scholarships', label: 'शिष्यवृत्ती माहिती', icon: '💰', premium: true },
 ]
-const NAV_OTHER = [{ to: '/settings', label: 'सेटिंग', icon: '⚙️' }]
+const NAV_OTHER = [
+  { to: '/promote', label: 'इयत्ता बढती', icon: '⬆️' },
+  { to: '/backup', label: 'बॅकअप / Restore', icon: '💾' },
+  { to: '/settings', label: 'सेटिंग', icon: '⚙️' },
+]
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { auth, logout } = useAuth()

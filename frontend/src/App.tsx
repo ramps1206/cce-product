@@ -14,6 +14,13 @@ import Grades from './pages/Grades'
 import Settings from './pages/Settings'
 import SchoolInfo from './pages/SchoolInfo'
 import CasteWise from './pages/CasteWise'
+import WorkingDays from './pages/WorkingDays'
+import Bharansh from './pages/Bharansh'
+import Promote from './pages/Promote'
+import IdCard from './pages/IdCard'
+import Bonafide from './pages/Bonafide'
+import TransferCertificate from './pages/TransferCertificate'
+import Backup from './pages/Backup'
 import Scholarships from './pages/Scholarships'
 import GeneralRegister from './pages/GeneralRegister'
 import ReportCard from './pages/ReportCard'
@@ -51,6 +58,13 @@ export default function App() {
         <Route path="/scholarships" element={<Scholarships />} />
         <Route path="/general-register" element={<GeneralRegister />} />
         <Route path="/caste-wise" element={<CasteWise />} />
+        <Route path="/working-days" element={<WorkingDays />} />
+        <Route path="/bharansh" element={<Bharansh />} />
+        <Route path="/promote" element={<Promote />} />
+        <Route path="/id-card" element={<IdCard />} />
+        <Route path="/bonafide" element={<Bonafide />} />
+        <Route path="/tc" element={<TransferCertificate />} />
+        <Route path="/backup" element={<Backup />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
