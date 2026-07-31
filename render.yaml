@@ -1,0 +1,22 @@
+# Render Blueprint — free-tier Docker web service (no card required).
+# The backend serves the built React SPA; database is external Neon.
+# After connecting this repo in Render, set the three SPRING_DATASOURCE_* env
+# vars (from your Neon connection string) in the dashboard; CCE_JWT_SECRET is
+# generated automatically.
+services:
+  - type: web
+    name: cce-product
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        sync: false          # set in dashboard: jdbc:postgresql://<neon-host>/<db>?sslmode=require
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: CCE_JWT_SECRET
+        generateValue: true  # Render generates a strong secret
