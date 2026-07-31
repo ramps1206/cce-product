@@ -75,8 +75,8 @@ export default function Students() {
         </div>
       </div>
 
-      <div className="bg-card border border-bdr rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-card border border-bdr rounded-xl overflow-x-auto">
+        <table className="w-full text-sm min-w-[520px]">
           <thead className="bg-sf/5 text-sf">
             <tr>
               <Th>क्र.</Th>
@@ -117,8 +117,8 @@ export default function Students() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <form onSubmit={save} className="bg-white rounded-2xl p-6 w-[380px] shadow-2xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-20">
+          <form onSubmit={save} className="bg-white rounded-2xl p-6 w-full max-w-[380px] max-h-[90vh] overflow-y-auto shadow-2xl">
             <h2 className="text-lg font-bold text-sf mb-4">
               {editing ? 'विद्यार्थी संपादन' : 'नवीन विद्यार्थी'}
             </h2>

@@ -24,6 +24,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [online, setOnline] = useState(navigator.onLine)
   const [syncing, setSyncing] = useState(false)
   const [msg, setMsg] = useState('')
+  const [drawer, setDrawer] = useState(false)
 
   useEffect(() => {
     const on = () => setOnline(true)
@@ -41,10 +42,10 @@ export default function Layout({ children }: { children: ReactNode }) {
     setMsg('')
     try {
       const r = await syncNow()
-      setMsg(`✓ पाठवले ${r.pushed}, मिळाले ${r.pulled}`)
+      setMsg(`✓ ${r.pushed}/${r.pulled}`)
       window.dispatchEvent(new Event('cce-synced'))
     } catch (e: any) {
-      setMsg('⚠ ' + (e.message === 'offline' ? 'ऑफलाइन' : 'सिंक अयशस्वी'))
+      setMsg(e.message === 'offline' ? '⚠ ऑफलाइन' : '⚠ अयशस्वी')
     } finally {
       setSyncing(false)
       setTimeout(() => setMsg(''), 4000)
@@ -53,18 +54,33 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-full">
-      {/* Sidebar */}
-      <aside className="w-56 bg-sf text-white flex flex-col">
-        <div className="px-5 py-4 border-b border-white/10">
-          <div className="text-lg font-bold">CCE Software</div>
-          <div className="text-xs text-white/60">सतत सर्वंकष मूल्यमापन</div>
+      {/* Backdrop for the mobile drawer */}
+      {drawer && (
+        <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setDrawer(false)} />
+      )}
+
+      {/* Sidebar: off-canvas drawer on mobile, static on md+ */}
+      <aside
+        className={`fixed z-40 inset-y-0 left-0 w-64 bg-sf text-white flex flex-col
+          transform transition-transform duration-200 md:static md:translate-x-0 md:z-auto
+          ${drawer ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <div>
+            <div className="text-lg font-bold">CCE Software</div>
+            <div className="text-xs text-white/60">सतत सर्वंकष मूल्यमापन</div>
+          </div>
+          <button className="md:hidden text-white/70 text-xl leading-none" onClick={() => setDrawer(false)}>
+            ✕
+          </button>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
+              onClick={() => setDrawer(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${
                   isActive ? 'bg-gold text-sf font-semibold' : 'text-white/80 hover:bg-white/10'
@@ -81,12 +97,19 @@ export default function Layout({ children }: { children: ReactNode }) {
         </button>
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 bg-card border-b border-bdr flex items-center justify-between px-5">
-          <div className="flex items-center gap-3 text-sm">
+      {/* Main column */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <header className="h-14 bg-card border-b border-bdr flex items-center gap-2 px-3 sm:px-5">
+          <button
+            className="md:hidden text-2xl leading-none text-sf px-1"
+            onClick={() => setDrawer(true)}
+            aria-label="मेनू"
+          >
+            ☰
+          </button>
+          <div className="flex items-center gap-2 text-sm min-w-0">
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs whitespace-nowrap ${
                 online ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
               }`}
             >
@@ -94,22 +117,24 @@ export default function Layout({ children }: { children: ReactNode }) {
             </span>
             <span className="px-2 py-0.5 rounded-full text-xs bg-sf/10 text-sf uppercase">{auth?.tier}</span>
             {auth?.tier === 'trial' && (
-              <span className="text-xs text-slate-500">ट्रायल: {auth.trialDaysLeft} दिवस शिल्लक</span>
+              <span className="hidden sm:inline text-xs text-slate-500 whitespace-nowrap">
+                ट्रायल: {auth.trialDaysLeft} दिवस
+              </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            {msg && <span className="text-xs text-slate-500">{msg}</span>}
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+            {msg && <span className="text-xs text-slate-500 whitespace-nowrap">{msg}</span>}
             <button
               onClick={doSync}
               disabled={syncing}
-              className="px-3 py-1.5 rounded-lg text-sm bg-sf text-white hover:bg-sf/90 disabled:opacity-50"
+              className="px-3 py-1.5 rounded-lg text-sm bg-sf text-white hover:bg-sf/90 disabled:opacity-50 whitespace-nowrap"
             >
-              {syncing ? 'सिंक…' : '🔄 सिंक'}
+              {syncing ? '…' : '🔄'} <span className="hidden sm:inline">सिंक</span>
             </button>
-            <span className="text-xs text-slate-500">{auth?.email}</span>
+            <span className="hidden md:inline text-xs text-slate-500 truncate max-w-[160px]">{auth?.email}</span>
           </div>
         </header>
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:p-6">{children}</main>
       </div>
     </div>
   )

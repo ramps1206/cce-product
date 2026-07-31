@@ -154,7 +154,8 @@ export default function ReportCard() {
             </div>
           </div>
 
-          <table className="w-full text-sm border border-bdr mb-5">
+          <div className="overflow-x-auto mb-5">
+          <table className="w-full text-sm border border-bdr min-w-[440px]">
             <thead className="bg-sf/5 text-sf">
               <tr>
                 <th className="text-left px-3 py-2 border-b border-bdr">विषय</th>
@@ -203,6 +204,7 @@ export default function ReportCard() {
               ))}
             </tbody>
           </table>
+          </div>
 
           <div className="text-sm mb-4">
             <span className="text-slate-500">एकूण हजेरी: </span>

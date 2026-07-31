@@ -26,8 +26,8 @@ export default function Login() {
   }
 
   return (
-    <div className="h-full flex items-center justify-center bg-gradient-to-br from-[#0D2B3E] via-[#1B5E84] to-[#2196C8]">
-      <form onSubmit={submit} className="bg-white rounded-2xl shadow-2xl w-[390px] p-9">
+    <div className="min-h-full flex items-center justify-center p-4 bg-gradient-to-br from-[#0D2B3E] via-[#1B5E84] to-[#2196C8]">
+      <form onSubmit={submit} className="bg-white rounded-2xl shadow-2xl w-full max-w-[390px] p-7 sm:p-9">
         <div className="text-center mb-6">
           <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-[#1B5E84] to-[#2196C8] flex items-center justify-center text-3xl">
             📘
