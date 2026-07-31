@@ -18,6 +18,7 @@ const NAV_MAIN = [
   { to: '/report-card', label: 'निकालपत्रक', icon: '🧾' },
   { to: '/grades', label: 'श्रेणी', icon: '🏅' },
   { to: '/general-register', label: 'जनरल रजिस्टर', icon: '📔' },
+  { to: '/caste-wise', label: 'विद्यार्थी अतिरिक्त माहिती', icon: '📇' },
   { to: '/scholarships', label: 'शिष्यवृत्ती माहिती', icon: '💰', premium: true },
 ]
 const NAV_OTHER = [{ to: '/settings', label: 'सेटिंग', icon: '⚙️' }]
@@ -90,7 +91,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed z-40 inset-y-0 left-0 w-64 bg-sidebar text-white flex flex-col
+        className={`print:hidden fixed z-40 inset-y-0 left-0 w-64 bg-sidebar text-white flex flex-col
           transform transition-transform duration-200 md:static md:translate-x-0 md:z-auto
           ${drawer ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -120,7 +121,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header className="bg-topbar text-white flex items-center gap-2 px-3 sm:px-5 py-2.5 shadow">
+        <header className="print:hidden bg-topbar text-white flex items-center gap-2 px-3 sm:px-5 py-2.5 shadow">
           <button className="md:hidden text-2xl leading-none px-1" onClick={() => setDrawer(true)} aria-label="मेनू">☰</button>
           <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-sm font-bold shrink-0">CCE</div>
           <div className="min-w-0">

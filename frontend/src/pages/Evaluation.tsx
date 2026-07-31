@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getScalar, listPart, putItem } from '../lib/store'
 import { syncNow } from '../lib/sync'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { DEFAULT_BANDS, gradeFor } from '../lib/grades'
 import { SUBJECTS, TERMS } from '../lib/subjects'
 import { PageHeader, TableCard, Td, Th } from '../components/ui'
 
 interface Student {
-  rollNo?: number
+  roll?: string
   name?: string
-  cls?: string
+  classId?: string
 }
 interface EvalRec {
   marks?: number
@@ -19,6 +21,8 @@ const evalKey = (studentKey: string, subject: string, term: string) =>
   `${studentKey}::${subject}::${term}`
 
 export default function Evaluation() {
+  const { rows: classRows } = useCollection<any>('classes')
+  const classMap: Record<string,string> = Object.fromEntries(classRows.map((c: any) => [c.key, clsName(c.payload)]))
   const [students, setStudents] = useState<{ key: string; payload: Student }[]>([])
   const [evals, setEvals] = useState<Record<string, EvalRec>>({})
   const [bands, setBands] = useState(DEFAULT_BANDS)
@@ -44,13 +48,10 @@ export default function Evaluation() {
     return () => window.removeEventListener('cce-synced', h)
   }, [])
 
-  const classes = useMemo(
-    () => Array.from(new Set(students.map((s) => s.payload.cls).filter(Boolean))) as string[],
-    [students]
-  )
+  const classes = classRows.map((c: any) => c.key) as string[]
   const shown = students
-    .filter((s) => !cls || s.payload.cls === cls)
-    .sort((a, b) => (a.payload.rollNo || 0) - (b.payload.rollNo || 0))
+    .filter((s) => !cls || s.payload.classId === cls)
+    .sort((a, b) => (Number(a.payload.roll) || 0) - (Number(b.payload.roll) || 0))
 
   async function saveMarks(studentKey: string, marks: number) {
     const key = evalKey(studentKey, subject, term)
@@ -65,7 +66,7 @@ export default function Evaluation() {
       <PageHeader title="मूल्यमापन" />
 
       <div className="flex flex-wrap items-end gap-4 mb-5">
-        <Select label="वर्ग" value={cls} onChange={setCls} options={[['', 'सर्व'], ...classes.map((c) => [c, c] as [string, string])]} />
+        <Select label="वर्ग" value={cls} onChange={setCls} options={[['', 'सर्व'], ...classes.map((c) => [c, classMap[c]] as [string, string])]} />
         <Select label="विषय" value={subject} onChange={setSubject} options={SUBJECTS.map((s) => [s, s])} />
         <Select label="सत्र" value={term} onChange={setTerm} options={TERMS.map((t) => [t.k, t.label])} />
         <div>
@@ -106,7 +107,7 @@ export default function Evaluation() {
           const hasMarks = rec?.marks !== undefined
           return (
             <tr key={s.key} className="border-t border-bdr hover:bg-slate-50">
-              <Td>{s.payload.rollNo ?? '—'}</Td>
+              <Td>{s.payload.roll ?? '—'}</Td>
               <Td className="font-medium">{s.payload.name}</Td>
               <Td>
                 <div className="flex items-center gap-1">

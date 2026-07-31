@@ -2,15 +2,19 @@ import { useEffect, useMemo, useState } from 'react'
 import { getScalar, listPart } from '../lib/store'
 import { DEFAULT_BANDS, gradeFor } from '../lib/grades'
 import { SUBJECTS, TERMS } from '../lib/subjects'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { PageHeader, btnGhost } from '../components/ui'
 
 interface Student {
-  rollNo?: number
+  roll?: string
   name?: string
-  cls?: string
+  classId?: string
 }
 
 export default function SemesterReport() {
+  const { rows: classRows } = useCollection<any>('classes')
+  const classMap: Record<string,string> = Object.fromEntries(classRows.map((c: any) => [c.key, clsName(c.payload)]))
   const [students, setStudents] = useState<{ key: string; payload: Student }[]>([])
   const [evals, setEvals] = useState<Record<string, any>>({})
   const [bands, setBands] = useState(DEFAULT_BANDS)
@@ -32,13 +36,10 @@ export default function SemesterReport() {
     return () => window.removeEventListener('cce-synced', h)
   }, [])
 
-  const classes = useMemo(
-    () => Array.from(new Set(students.map((s) => s.payload.cls).filter(Boolean))) as string[],
-    [students]
-  )
+  const classes = classRows.map((c: any) => c.key) as string[]
   const rows = students
-    .filter((s) => !cls || s.payload.cls === cls)
-    .sort((a, b) => (a.payload.rollNo || 0) - (b.payload.rollNo || 0))
+    .filter((s) => !cls || s.payload.classId === cls)
+    .sort((a, b) => (Number(a.payload.roll) || 0) - (Number(b.payload.roll) || 0))
 
   // Only show subjects that have any marks for this class+term (keeps table tight).
   const activeSubjects = SUBJECTS.filter((sub) =>
@@ -70,9 +71,7 @@ export default function SemesterReport() {
             >
               <option value="">सर्व</option>
               {classes.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{classMap[c]}</option>
               ))}
             </select>
           </div>
@@ -123,7 +122,7 @@ export default function SemesterReport() {
             )}
             {rows.map((s) => (
               <tr key={s.key} className="border-t border-bdr">
-                <td className="px-3 py-2">{s.payload.rollNo ?? '—'}</td>
+                <td className="px-3 py-2">{s.payload.roll ?? '—'}</td>
                 <td className="px-3 py-2 font-medium">{s.payload.name}</td>
                 {activeSubjects.map((sub) => (
                   <td key={sub} className="px-3 py-2 text-center font-semibold text-sf">

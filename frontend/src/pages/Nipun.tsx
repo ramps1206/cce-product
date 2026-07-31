@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { listPart, putItem } from '../lib/store'
 import { syncNow } from '../lib/sync'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { PageHeader, TableCard, Td, Th } from '../components/ui'
 
 interface Student {
-  rollNo?: number
+  roll?: string
   name?: string
-  cls?: string
+  classId?: string
 }
 interface NipunRec {
   reading?: string
@@ -21,6 +23,8 @@ const isNipun = (r?: NipunRec) =>
   !!r && r.reading === READING[READING.length - 1] && r.math === MATH[MATH.length - 1]
 
 export default function Nipun() {
+  const { rows: classRows } = useCollection<any>('classes')
+  const classMap: Record<string,string> = Object.fromEntries(classRows.map((c: any) => [c.key, clsName(c.payload)]))
   const [students, setStudents] = useState<{ key: string; payload: Student }[]>([])
   const [recs, setRecs] = useState<Record<string, NipunRec>>({})
   const [cls, setCls] = useState('')
@@ -36,13 +40,10 @@ export default function Nipun() {
     return () => window.removeEventListener('cce-synced', h)
   }, [])
 
-  const classes = useMemo(
-    () => Array.from(new Set(students.map((s) => s.payload.cls).filter(Boolean))) as string[],
-    [students]
-  )
+  const classes = classRows.map((c: any) => c.key) as string[]
   const shown = students
-    .filter((s) => !cls || s.payload.cls === cls)
-    .sort((a, b) => (a.payload.rollNo || 0) - (b.payload.rollNo || 0))
+    .filter((s) => !cls || s.payload.classId === cls)
+    .sort((a, b) => (Number(a.payload.roll) || 0) - (Number(b.payload.roll) || 0))
 
   const nipunCount = shown.filter((s) => isNipun(recs[s.key])).length
 
@@ -67,9 +68,7 @@ export default function Nipun() {
           >
             <option value="">सर्व</option>
             {classes.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{classMap[c]}</option>
             ))}
           </select>
         </div>
@@ -103,7 +102,7 @@ export default function Nipun() {
           const nipun = isNipun(rec)
           return (
             <tr key={s.key} className="border-t border-bdr hover:bg-slate-50">
-              <Td>{s.payload.rollNo ?? '—'}</Td>
+              <Td>{s.payload.roll ?? '—'}</Td>
               <Td className="font-medium">{s.payload.name}</Td>
               <Td>
                 <LevelSelect value={rec.reading} options={READING} onChange={(v) => update(s.key, { reading: v })} />

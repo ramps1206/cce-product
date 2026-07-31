@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getScalar, listPart, putItem } from '../lib/store'
 import { syncNow } from '../lib/sync'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { DEFAULT_BANDS, gradeFor } from '../lib/grades'
 import { SUBJECTS, TERMS } from '../lib/subjects'
 import { PageHeader, btnGhost } from '../components/ui'
 
 interface Student {
-  rollNo?: number
+  roll?: string
   name?: string
-  cls?: string
+  classId?: string
 }
 
 const MONTH_KEYS = ['jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar', 'apr', 'may']
 
 export default function ReportCard() {
+  const { rows: classRows } = useCollection<any>('classes')
+  const classMap: Record<string,string> = Object.fromEntries(classRows.map((c: any) => [c.key, clsName(c.payload)]))
   const [students, setStudents] = useState<{ key: string; payload: Student }[]>([])
   const [evals, setEvals] = useState<Record<string, any>>({})
   const [att, setAtt] = useState<Record<string, any>>({})
@@ -45,13 +49,10 @@ export default function ReportCard() {
     return () => window.removeEventListener('cce-synced', h)
   }, [])
 
-  const classes = useMemo(
-    () => Array.from(new Set(students.map((s) => s.payload.cls).filter(Boolean))) as string[],
-    [students]
-  )
+  const classes = classRows.map((c: any) => c.key) as string[]
   const classStudents = students
-    .filter((s) => !cls || s.payload.cls === cls)
-    .sort((a, b) => (a.payload.rollNo || 0) - (b.payload.rollNo || 0))
+    .filter((s) => !cls || s.payload.classId === cls)
+    .sort((a, b) => (Number(a.payload.roll) || 0) - (Number(b.payload.roll) || 0))
   const student = students.find((s) => s.key === studentKey)
 
   useEffect(() => {
@@ -107,9 +108,7 @@ export default function ReportCard() {
             >
               <option value="">सर्व</option>
               {classes.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{classMap[c]}</option>
               ))}
             </select>
           </div>
@@ -123,7 +122,7 @@ export default function ReportCard() {
               <option value="">— निवडा —</option>
               {classStudents.map((s) => (
                 <option key={s.key} value={s.key}>
-                  {s.payload.rollNo ? s.payload.rollNo + '. ' : ''}
+                  {s.payload.roll ? s.payload.roll + '. ' : ''}
                   {s.payload.name}
                 </option>
               ))}
@@ -150,7 +149,7 @@ export default function ReportCard() {
             </div>
             <div>
               <span className="text-slate-500">हजेरी क्रमांक: </span>
-              <span className="font-medium">{student.payload.rollNo ?? '—'}</span>
+              <span className="font-medium">{student.payload.roll ?? '—'}</span>
             </div>
           </div>
 

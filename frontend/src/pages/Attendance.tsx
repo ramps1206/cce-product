@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getScalar, listPart, putItem, putScalar } from '../lib/store'
 import { syncNow } from '../lib/sync'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { PageHeader, TableCard, Td, Th } from '../components/ui'
 
 const MONTHS = [
@@ -19,12 +21,14 @@ const MONTHS = [
 ]
 
 interface Student {
-  rollNo?: number
+  roll?: string
   name?: string
-  cls?: string
+  classId?: string
 }
 
 export default function Attendance() {
+  const { rows: classRows } = useCollection<any>('classes')
+  const classMap: Record<string,string> = Object.fromEntries(classRows.map((c: any) => [c.key, clsName(c.payload)]))
   const [month, setMonth] = useState('jun')
   const [cls, setCls] = useState('')
   const [students, setStudents] = useState<{ key: string; payload: Student }[]>([])
@@ -46,13 +50,10 @@ export default function Attendance() {
     return () => window.removeEventListener('cce-synced', h)
   }, [])
 
-  const classes = useMemo(
-    () => Array.from(new Set(students.map((s) => s.payload.cls).filter(Boolean))) as string[],
-    [students]
-  )
+  const classes = classRows.map((c: any) => c.key) as string[]
   const shown = students
-    .filter((s) => !cls || s.payload.cls === cls)
-    .sort((a, b) => (a.payload.rollNo || 0) - (b.payload.rollNo || 0))
+    .filter((s) => !cls || s.payload.classId === cls)
+    .sort((a, b) => (Number(a.payload.roll) || 0) - (Number(b.payload.roll) || 0))
 
   const wd = working[month] || 0
 
@@ -98,9 +99,7 @@ export default function Attendance() {
           >
             <option value="">सर्व</option>
             {classes.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+              <option key={c} value={c}>{classMap[c]}</option>
             ))}
           </select>
         </div>
@@ -138,7 +137,7 @@ export default function Attendance() {
           const pct = wd > 0 ? Math.round((p / wd) * 100) : 0
           return (
             <tr key={s.key} className="border-t border-bdr hover:bg-slate-50">
-              <Td>{s.payload.rollNo ?? '—'}</Td>
+              <Td>{s.payload.roll ?? '—'}</Td>
               <Td className="font-medium">{s.payload.name}</Td>
               <Td>
                 <input

@@ -12,6 +12,7 @@ import Nipun from './pages/Nipun'
 import Grades from './pages/Grades'
 import Settings from './pages/Settings'
 import SchoolInfo from './pages/SchoolInfo'
+import CasteWise from './pages/CasteWise'
 import Scholarships from './pages/Scholarships'
 import GeneralRegister from './pages/GeneralRegister'
 import ReportCard from './pages/ReportCard'
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/report-card" element={<ReportCard />} />
         <Route path="/scholarships" element={<Scholarships />} />
         <Route path="/general-register" element={<GeneralRegister />} />
+        <Route path="/caste-wise" element={<CasteWise />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
