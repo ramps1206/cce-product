@@ -14,6 +14,7 @@ const NAV_MAIN = [
   { to: '/attendance', label: 'हजेरी', icon: '📅' },
   { to: '/evaluation', label: 'मूल्यमापन', icon: '📝' },
   { to: '/nipun', label: 'निपुण महाराष्ट्र', icon: '🎯' },
+  { to: '/learning-outcomes', label: 'अध्ययन निष्पत्ती', icon: '📚' },
   { to: '/semester-report', label: 'सत्र अहवाल', icon: '📊' },
   { to: '/report-card', label: 'निकालपत्रक', icon: '🧾' },
   { to: '/grades', label: 'श्रेणी', icon: '🏅' },

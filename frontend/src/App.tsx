@@ -9,6 +9,7 @@ import Teachers from './pages/Teachers'
 import Attendance from './pages/Attendance'
 import Evaluation from './pages/Evaluation'
 import Nipun from './pages/Nipun'
+import LearningOutcomes from './pages/LearningOutcomes'
 import Grades from './pages/Grades'
 import Settings from './pages/Settings'
 import SchoolInfo from './pages/SchoolInfo'
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/evaluation" element={<Evaluation />} />
         <Route path="/nipun" element={<Nipun />} />
+        <Route path="/learning-outcomes" element={<LearningOutcomes />} />
         <Route path="/grades" element={<Grades />} />
         <Route path="/semester-report" element={<SemesterReport />} />
         <Route path="/report-card" element={<ReportCard />} />

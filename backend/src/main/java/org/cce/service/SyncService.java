@@ -33,7 +33,7 @@ public class SyncService {
 
     /** Map parts + scalar parts, all stored in school_kv. */
     private static final Set<String> KV_PARTS = Set.of(
-            "evaluations", "attendance", "descriptiveNotes", "bharansh", "nipun",
+            "evaluations", "attendance", "descriptiveNotes", "bharansh", "nipun", "lo",
             "school", "workingDays", "settings");
 
     private final JdbcTemplate jdbc;
