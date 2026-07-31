@@ -1,9 +1,14 @@
 server:
-  port: 8080
+  # Honor the platform-provided PORT (Render/Fly/etc.); default 8080 locally.
+  port: ${PORT:8080}
 
 spring:
   application:
     name: cce-backend
+  autoconfigure:
+    # We authenticate with JWT, not Spring's default in-memory user — disable it
+    # so no dev-only generated password is created.
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cce_dev}
     username: ${SPRING_DATASOURCE_USERNAME:cce}
