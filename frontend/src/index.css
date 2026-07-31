@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default theme (navy/gold). Overridden at runtime by lib/themes applyTheme(). */
+:root {
+  --cce-primary: 30 42 120;        /* #1e2a78 */
+  --cce-sidebar: 12 24 48;         /* #0c1830 */
+  --cce-sidebar-active: 22 48 90;  /* #16305a */
+  --cce-bg: 243 241 251;           /* #f3f1fb */
+  --cce-topbar: linear-gradient(90deg, #3d2f9e 0%, #5b3fc0 55%, #6d4bd0 100%);
+}
+
 html,
 body,
 #root {

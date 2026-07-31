@@ -21,6 +21,10 @@ import IdCard from './pages/IdCard'
 import Bonafide from './pages/Bonafide'
 import TransferCertificate from './pages/TransferCertificate'
 import Backup from './pages/Backup'
+import DataEntry from './pages/DataEntry'
+import Records from './pages/Records'
+import Results from './pages/Results'
+import StudentExtra from './pages/StudentExtra'
 import Scholarships from './pages/Scholarships'
 import GeneralRegister from './pages/GeneralRegister'
 import ReportCard from './pages/ReportCard'
@@ -44,6 +48,10 @@ export default function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/data-entry" element={<DataEntry />} />
+        <Route path="/records" element={<Records />} />
+        <Route path="/results" element={<Results />} />
+        <Route path="/student-extra" element={<StudentExtra />} />
         <Route path="/school" element={<SchoolInfo />} />
         <Route path="/classes" element={<Classes />} />
         <Route path="/students" element={<Students />} />

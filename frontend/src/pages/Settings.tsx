@@ -3,6 +3,7 @@ import { getScalar, putScalar } from '../lib/store'
 import { syncNow } from '../lib/sync'
 import { importLegacyBlob, type ImportResult } from '../lib/importBlob'
 import { Field, PageHeader, btnGhost, btnPrimary } from '../components/ui'
+import { THEMES, applyTheme, currentTheme } from '../lib/themes'
 
 interface SchoolProfile {
   name?: string
@@ -23,6 +24,12 @@ export default function Settings() {
   const [importing, setImporting] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
   const [err, setErr] = useState('')
+  const [theme, setTheme] = useState(currentTheme())
+
+  function pickTheme(k: string) {
+    applyTheme(k)
+    setTheme(k)
+  }
 
   async function load() {
     setSchool((await getScalar('school')) || {})
@@ -65,6 +72,26 @@ export default function Settings() {
   return (
     <div className="max-w-2xl">
       <PageHeader title="सेटिंग्ज" />
+
+      {/* Theme */}
+      <div className="bg-card border border-bdr rounded-xl p-5 mb-6">
+        <h2 className="font-bold text-sf mb-3">🎨 थीम</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {THEMES.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => pickTheme(t.key)}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg border text-sm text-left ${
+                theme === t.key ? 'border-sf ring-2 ring-sf/30' : 'border-slate-300 hover:border-sf'
+              }`}
+            >
+              <span className="w-6 h-6 rounded-full shrink-0" style={{ background: t.swatch }} />
+              <span className="flex-1">{t.label}</span>
+              {theme === t.key && <span className="text-sf">✓</span>}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* School profile */}
       <form onSubmit={saveProfile} className="bg-card border border-bdr rounded-xl p-5 mb-6">

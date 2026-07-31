@@ -7,19 +7,19 @@ export default {
         deva: ['"Noto Sans Devanagari"', 'sans-serif'],
       },
       colors: {
-        // Matched to the original CCE app screenshots.
-        sf: '#1e2a78',        // primary indigo (headings/buttons)
+        // Themeable tokens driven by CSS variables (see index.css + lib/themes).
+        sf: 'rgb(var(--cce-primary) / <alpha-value>)',       // primary (headings/buttons)
         gold: '#C9A227',
-        bg: '#f3f1fb',        // light lavender page background
+        bg: 'rgb(var(--cce-bg) / <alpha-value>)',            // page background
         card: '#ffffff',
         bdr: '#e6e2f5',
-        sidebar: '#0c1830',   // dark navy sidebar
-        sidebaract: '#16305a',// active nav item
-        dot: '#facc15',       // yellow status dot
+        sidebar: 'rgb(var(--cce-sidebar) / <alpha-value>)',  // dark sidebar
+        sidebaract: 'rgb(var(--cce-sidebar-active) / <alpha-value>)',
+        dot: '#facc15',
       },
       backgroundImage: {
-        // Purple top-bar gradient used across the app.
-        topbar: 'linear-gradient(90deg,#3d2f9e 0%,#5b3fc0 55%,#6d4bd0 100%)',
+        // Top-bar gradient (themeable).
+        topbar: 'var(--cce-topbar)',
       },
     },
   },

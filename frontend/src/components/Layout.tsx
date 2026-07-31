@@ -7,24 +7,12 @@ import { syncNow } from '../lib/sync'
 // Top-level navigation, echoing the original app's sidebar.
 const NAV_MAIN = [
   { to: '/', label: 'मुखपृष्ठ', icon: '🏠', end: true },
-  { to: '/school', label: 'शाळा माहिती', icon: '🏫' },
-  { to: '/classes', label: 'वर्ग', icon: '🏫' },
-  { to: '/students', label: 'विद्यार्थी', icon: '👧' },
-  { to: '/teachers', label: 'शिक्षक', icon: '👩‍🏫' },
-  { to: '/attendance', label: 'हजेरी', icon: '📅' },
-  { to: '/working-days', label: 'कामाचे दिवस', icon: '📆' },
-  { to: '/bharansh', label: 'भारांश', icon: '⚖️' },
-  { to: '/evaluation', label: 'मूल्यमापन', icon: '📝' },
+  { to: '/data-entry', label: 'माहिती नोंद', icon: '📁' },
+  { to: '/records', label: 'नोंदी', icon: '📝' },
+  { to: '/results', label: 'निकाल', icon: '📄' },
   { to: '/nipun', label: 'निपुण महाराष्ट्र', icon: '🎯' },
   { to: '/learning-outcomes', label: 'अध्ययन निष्पत्ती', icon: '📚' },
-  { to: '/semester-report', label: 'सत्र अहवाल', icon: '📊' },
-  { to: '/report-card', label: 'निकालपत्रक', icon: '🧾' },
-  { to: '/grades', label: 'श्रेणी', icon: '🏅' },
-  { to: '/general-register', label: 'जनरल रजिस्टर', icon: '📔' },
-  { to: '/caste-wise', label: 'विद्यार्थी अतिरिक्त माहिती', icon: '📇' },
-  { to: '/id-card', label: 'ID Card', icon: '🪪' },
-  { to: '/bonafide', label: 'बोनाफाईड', icon: '📜' },
-  { to: '/tc', label: 'TC दाखला', icon: '📄' },
+  { to: '/student-extra', label: 'विद्यार्थी अतिरिक्त माहिती', icon: '📇' },
   { to: '/scholarships', label: 'शिष्यवृत्ती माहिती', icon: '💰', premium: true },
 ]
 const NAV_OTHER = [
