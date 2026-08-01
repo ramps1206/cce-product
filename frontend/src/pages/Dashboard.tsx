@@ -37,7 +37,8 @@ const ACTIONS: { to: string; label: string; icon: string; bg: string }[] = [
   { to: '/results', label: 'शाळा प्रिंट', icon: '🖨️', bg: 'bg-yellow-50 border-yellow-200' },
 ]
 
-// Software वापरण्याचे टप्पे — 11 ordered steps.
+// Software वापरण्याचे टप्पे — 11 ordered steps, each linking to its tab.
+const STEP_LINKS = ['/school', '/teachers', '/classes', '/students', '/bharansh', '/working-days', '/evaluation', '/evaluation', '/results', '/nipun', '/learning-outcomes']
 const STEPS: string[] = [
   '🏫 शाळा माहिती भरा (शाळेचे नाव, UDISE, मुख्याध्यापक, माध्यम, शैक्षणिक वर्ष नोंदवा)',
   '👩‍🏫 शिक्षक माहिती जोडा',
@@ -286,9 +287,15 @@ export default function Dashboard() {
           <div className="font-bold text-slate-700 mb-3">Software वापरण्याचे टप्पे <span className="text-slate-400 font-normal text-sm">— क्रमाने करा</span></div>
           <ol className="space-y-2">
             {STEPS.map((s, i) => (
-              <li key={i} className="flex items-start gap-3 bg-slate-50 border border-bdr rounded-lg px-3 py-2 text-sm">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                <span className="text-slate-700">{s}</span>
+              <li key={i}>
+                <Link
+                  to={STEP_LINKS[i]}
+                  className="flex items-start gap-3 bg-slate-50 hover:bg-sf/5 border border-bdr hover:border-sf rounded-lg px-3 py-2 text-sm transition-colors"
+                >
+                  <span className="shrink-0 w-6 h-6 rounded-full bg-gold text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <span className="text-slate-700 flex-1">{s}</span>
+                  <span className="shrink-0 text-slate-400">›</span>
+                </Link>
               </li>
             ))}
           </ol>
