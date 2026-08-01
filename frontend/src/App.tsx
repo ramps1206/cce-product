@@ -14,6 +14,7 @@ import Grades from './pages/Grades'
 import Settings from './pages/Settings'
 import SchoolInfo from './pages/SchoolInfo'
 import CasteWise from './pages/CasteWise'
+import Account from './pages/Account'
 import WorkingDays from './pages/WorkingDays'
 import Bharansh from './pages/Bharansh'
 import Promote from './pages/Promote'
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/tc" element={<TransferCertificate />} />
         <Route path="/backup" element={<Backup />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/account" element={<Account />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

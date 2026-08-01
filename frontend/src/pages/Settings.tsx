@@ -73,6 +73,14 @@ export default function Settings() {
     <div className="max-w-2xl">
       <PageHeader title="सेटिंग्ज" />
 
+      {/* Quick links to settings sub-screens */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <a href="/account" className="px-3 py-2 rounded-lg text-sm border border-bdr bg-card hover:border-sf">🔐 खाते सुरक्षा</a>
+        <a href="/grades" className="px-3 py-2 rounded-lg text-sm border border-bdr bg-card hover:border-sf">📊 श्रेणी सारणी</a>
+        <a href="/bharansh" className="px-3 py-2 rounded-lg text-sm border border-bdr bg-card hover:border-sf">⚖️ भारांश निश्चिती</a>
+        <a href="/backup" className="px-3 py-2 rounded-lg text-sm border border-bdr bg-card hover:border-sf">💾 डेटा बॅकअप</a>
+      </div>
+
       {/* Theme */}
       <div className="bg-card border border-bdr rounded-xl p-5 mb-6">
         <h2 className="font-bold text-sf mb-3">🎨 थीम</h2>

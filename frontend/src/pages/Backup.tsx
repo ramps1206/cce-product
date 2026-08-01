@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { db } from '../lib/db'
-import { putItem, putScalar } from '../lib/store'
+import { listPart, putItem, putScalar } from '../lib/store'
 import { syncNow } from '../lib/sync'
 import { importLegacyBlob } from '../lib/importBlob'
+import { useCollection } from '../lib/useCollection'
+import { clsName } from '../lib/domain'
 import { PageHeader, btnGhost, btnPrimary } from '../components/ui'
 
 /** Our own export envelope: the raw local Item list, versioned. */
@@ -20,6 +22,7 @@ interface ExportItem {
 
 /** Scalar parts are stored under a single reserved key ('_'). */
 const SCALAR_PARTS = ['school', 'workingDays', 'settings']
+const LAST_BACKUP_KEY = 'cce_last_backup'
 
 function isExportEnvelope(v: unknown): v is ExportEnvelope {
   return !!v && typeof v === 'object' && Array.isArray((v as { items?: unknown }).items)
@@ -29,11 +32,84 @@ function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+function fmtDateTime(iso: string | null): string {
+  if (!iso) return 'अद्याप बॅकअप घेतलेला नाही'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return 'अद्याप बॅकअप घेतलेला नाही'
+  return d.toLocaleString('mr-IN')
+}
+
+interface Student {
+  name?: string
+  classId?: string | number
+  [k: string]: unknown
+}
+
 export default function Backup() {
   const [raw, setRaw] = useState('')
   const [busy, setBusy] = useState<'export' | 'import' | null>(null)
   const [status, setStatus] = useState('')
   const [err, setErr] = useState('')
+  const [lastBackup, setLastBackup] = useState<string | null>(
+    () => localStorage.getItem(LAST_BACKUP_KEY)
+  )
+
+  // Stats counts
+  const [counts, setCounts] = useState({
+    students: 0,
+    classes: 0,
+    assessments: 0,
+    teachers: 0,
+  })
+
+  // Orphan detection uses live collections.
+  const { rows: students } = useCollection<Student>('students')
+  const { rows: classes } = useCollection<any>('classes')
+
+  const [checkedOrphans, setCheckedOrphans] = useState(false)
+
+  async function refreshCounts() {
+    const [st, cl, as, te] = await Promise.all([
+      listPart('students'),
+      listPart('classes'),
+      listPart('assessments'),
+      listPart('teachers'),
+    ])
+    setCounts({
+      students: st.length,
+      classes: cl.length,
+      assessments: as.length,
+      teachers: te.length,
+    })
+  }
+
+  useEffect(() => {
+    refreshCounts()
+    const h = () => refreshCounts()
+    window.addEventListener('cce-synced', h)
+    return () => window.removeEventListener('cce-synced', h)
+  }, [])
+
+  const classKeys = new Set(classes.map((c) => String(c.key)))
+  const orphans = checkedOrphans
+    ? students.filter((s) => {
+        const cid = s.payload?.classId
+        return cid == null || !classKeys.has(String(cid))
+      })
+    : []
+
+  async function reassignOrphan(studentKey: string, payload: Student, newClassKey: string) {
+    setErr('')
+    setStatus('')
+    try {
+      await putItem('students', studentKey, { ...payload, classId: newClassKey })
+      syncNow().catch(() => {})
+      window.dispatchEvent(new Event('cce-synced'))
+      setStatus('✓ विद्यार्थी नवीन वर्गात हलवला.')
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'पुनर्नियुक्ती अयशस्वी')
+    }
+  }
 
   async function runExport() {
     setErr('')
@@ -57,6 +133,9 @@ export default function Backup() {
       a.click()
       a.remove()
       URL.revokeObjectURL(url)
+      const now = new Date().toISOString()
+      localStorage.setItem(LAST_BACKUP_KEY, now)
+      setLastBackup(now)
       setStatus(`✓ ${items.length} नोंदींची बॅकअप फाइल डाउनलोड झाली.`)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'बॅकअप डाउनलोड अयशस्वी')
@@ -111,6 +190,7 @@ export default function Backup() {
       }
 
       window.dispatchEvent(new Event('cce-synced'))
+      await refreshCounts()
       setStatus(`✓ Restore पूर्ण — ${count} नोंदी परत आणल्या.`)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Restore अयशस्वी')
@@ -119,59 +199,137 @@ export default function Backup() {
     }
   }
 
+  async function clearAll() {
+    if (!window.confirm('⚠️ सर्व स्थानिक डेटा कायमचा साफ करायचा? ही कृती पूर्ववत करता येणार नाही.'))
+      return
+    if (!window.confirm('खरंच? सर्व विद्यार्थी, वर्ग व मूल्यमापन नोंदी हटवल्या जातील. पुष्टी करा.'))
+      return
+    await db.items.clear()
+    window.location.reload()
+  }
+
   return (
     <div className="max-w-2xl">
-      <PageHeader title="डेटा बॅकअप / Restore" />
+      <PageHeader title="💾 डेटा बॅकअप" />
 
-      {/* Export */}
+      {/* Backup status + actions */}
       <div className="bg-card border border-bdr rounded-xl p-5 mb-6">
-        <h2 className="font-bold text-sf mb-1">बॅकअप डाउनलोड</h2>
+        <h2 className="font-bold text-sf mb-1">संपूर्ण बॅकअप स्थिती</h2>
         <p className="text-sm text-slate-500 mb-4">
-          तुमचा संपूर्ण स्थानिक डेटा एका <code>.json</code> फाइलमध्ये जतन करा. ही फाइल सुरक्षित ठिकाणी
-          ठेवा — गरज पडल्यास खालून Restore करता येईल.
+          शेवटचा बॅकअप: <span className="font-semibold text-sf">{fmtDateTime(lastBackup)}</span>
         </p>
-        <button onClick={runExport} disabled={busy !== null} className={btnPrimary + ' disabled:opacity-50'}>
-          {busy === 'export' ? 'तयार होत आहे…' : '⬇ बॅकअप डाउनलोड करा'}
-        </button>
-      </div>
 
-      {/* Restore */}
-      <div className="bg-card border border-bdr rounded-xl p-5">
-        <h2 className="font-bold text-sf mb-1">Restore करा</h2>
+        <div className="flex flex-wrap gap-2 mb-4">
+          <button
+            onClick={runExport}
+            disabled={busy !== null}
+            className={btnPrimary + ' disabled:opacity-50'}
+          >
+            {busy === 'export' ? 'तयार होत आहे…' : '⬇ आत्ता बॅकअप घ्या'}
+          </button>
 
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-3 mb-4">
-          ⚠ सूचना: Restore केल्यास बॅकअपमधील नोंदी सध्याच्या स्थानिक डेटावर विलीन (merge) होतील व
-          समान नोंदी अधिलिखित (overwrite) होऊ शकतात. पुढे जाण्यापूर्वी प्रथम वरून एक बॅकअप घ्या.
+          <label className={btnGhost + ' cursor-pointer inline-flex items-center'}>
+            ⬆ बॅकअप पुनर्स्थापित करा
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={onFile}
+              className="hidden"
+            />
+          </label>
+
+          {raw.trim() && (
+            <button
+              onClick={runImport}
+              disabled={busy !== null}
+              className={btnPrimary + ' disabled:opacity-50'}
+            >
+              {busy === 'import' ? 'पुनर्स्थापित होत आहे…' : '✓ पुनर्स्थापना सुरू करा'}
+            </button>
+          )}
         </div>
 
-        <p className="text-sm text-slate-500 mb-3">
-          बॅकअप <code>.json</code> फाइल निवडा (किंवा जुन्या CCE अ‍ॅपमधील <code>cce_v76_data</code> मजकूर
-          खाली पेस्ट करा) आणि "Restore करा" दाबा.
-        </p>
-
-        <input
-          type="file"
-          accept=".json,application/json"
-          onChange={onFile}
-          className="mb-3 text-sm"
-        />
         <textarea
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
-          placeholder='{"version":1,"items":[...]}  किंवा  {"school":{...},"students":[...]}'
-          className="w-full h-32 px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:border-sf outline-none text-xs font-mono mb-3"
+          placeholder='{"version":1,"items":[...]}  किंवा जुन्या CCE अ‍ॅपमधील मजकूर पेस्ट करा'
+          className="w-full h-24 px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:border-sf outline-none text-xs font-mono mb-3"
         />
 
-        <button
-          onClick={runImport}
-          disabled={busy !== null || !raw.trim()}
-          className={btnGhost + ' disabled:opacity-50'}
-        >
-          {busy === 'import' ? 'Restore होत आहे…' : '⬆ Restore करा'}
-        </button>
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg p-3">
+          ⚠️ बॅकअप फाईल सुरक्षित ठिकाणी जतन करा (Google Drive / Pen Drive).
+        </div>
 
         {err && <p className="text-sm text-red-600 mt-3">{err}</p>}
         {status && <p className="text-sm text-green-700 mt-3">{status}</p>}
+      </div>
+
+      {/* Stats */}
+      <div className="bg-card border border-bdr rounded-xl p-4 mb-6 text-sm text-sf">
+        📊 एकूण: {counts.students} विद्यार्थी | {counts.classes} वर्ग | {counts.assessments}{' '}
+        मूल्यमापन नोंदी | {counts.teachers} शिक्षक
+      </div>
+
+      {/* Clear all */}
+      <div className="bg-card border border-bdr rounded-xl p-5 mb-6">
+        <button
+          onClick={clearAll}
+          className="px-3 py-2 rounded-lg text-sm border border-red-300 text-red-600 hover:bg-red-50"
+        >
+          🗑 सर्व डेटा साफ
+        </button>
+      </div>
+
+      {/* Orphaned students */}
+      <div className="bg-card border border-bdr rounded-xl p-5">
+        <h2 className="font-bold text-sf mb-1">🔍 हरवलेले / अनाथ विद्यार्थी शोधा (Orphaned Students)</h2>
+        <p className="text-sm text-slate-500 mb-3">
+          ज्या विद्यार्थ्यांचा वर्ग अस्तित्वात नाही अशा नोंदी शोधा व त्यांना योग्य वर्गात पुन्हा नेमा.
+        </p>
+
+        <button onClick={() => setCheckedOrphans(true)} className={btnGhost}>
+          तपासा
+        </button>
+
+        {checkedOrphans && (
+          <div className="mt-4">
+            {orphans.length === 0 ? (
+              <p className="text-sm text-green-700">✓ कोणतेही अनाथ विद्यार्थी आढळले नाहीत.</p>
+            ) : (
+              <ul className="space-y-2">
+                {orphans.map((s) => (
+                  <li
+                    key={s.key}
+                    className="flex flex-wrap items-center gap-2 border border-bdr rounded-lg p-2 text-sm"
+                  >
+                    <span className="font-semibold text-sf">
+                      {s.payload?.name || `विद्यार्थी #${s.key}`}
+                    </span>
+                    <span className="text-red-600 text-xs">
+                      (हरवलेला वर्ग: {String(s.payload?.classId ?? '—')})
+                    </span>
+                    <select
+                      defaultValue=""
+                      onChange={(e) => {
+                        if (e.target.value) reassignOrphan(s.key, s.payload, e.target.value)
+                      }}
+                      className="ml-auto px-2 py-1 rounded-lg border border-slate-300 bg-slate-50 text-sm"
+                    >
+                      <option value="" disabled>
+                        वर्ग निवडा…
+                      </option>
+                      {classes.map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {clsName(c.payload)}
+                        </option>
+                      ))}
+                    </select>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

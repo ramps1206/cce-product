@@ -2,10 +2,16 @@ import { useState } from 'react'
 import ReportCard from './ReportCard'
 import SemesterReport from './SemesterReport'
 import Grades from './Grades'
+import Nondvahi from './Nondvahi'
+import SchoolConsolidated from './SchoolConsolidated'
+import CoverPage from './CoverPage'
 
 const TABS = [
   { label: '📄 प्रगती पत्रक', Comp: ReportCard },
   { label: '📊 श्रेणी तक्ता', Comp: SemesterReport },
+  { label: '📖 नोंदवही', Comp: Nondvahi },
+  { label: '🏆 शाळा एकत्रित निकाल', Comp: SchoolConsolidated },
+  { label: '📕 कव्हर पेज', Comp: CoverPage },
   { label: '🏅 श्रेणी सारणी', Comp: Grades },
 ] as const
 
