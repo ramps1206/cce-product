@@ -16,6 +16,8 @@ interface AuthCtx {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, schoolName: string, udise?: string) => Promise<void>
+  updateEmail: (newEmail: string, password: string) => Promise<void>
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -61,6 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     persist(r)
   }
 
+  async function updateEmail(newEmail: string, password: string) {
+    const r = await api.updateEmail({ newEmail, password })
+    persist(r) // new token carries the new email claim
+  }
+
+  async function updatePassword(currentPassword: string, newPassword: string) {
+    await api.updatePassword({ currentPassword, newPassword })
+  }
+
   async function logout() {
     setToken(null)
     localStorage.removeItem(AUTH_KEY)
@@ -68,7 +79,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuth(null)
   }
 
-  return <Ctx.Provider value={{ auth, loading, login, register, logout }}>{children}</Ctx.Provider>
+  return (
+    <Ctx.Provider
+      value={{ auth, loading, login, register, updateEmail, updatePassword, logout }}
+    >
+      {children}
+    </Ctx.Provider>
+  )
 }
 
 export const useAuth = () => useContext(Ctx)

@@ -43,6 +43,21 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/update-email")
+    public AuthResponse updateEmail(@Valid @RequestBody UpdateEmailRequest req) {
+        CcePrincipal me = CcePrincipal.current();
+        if (me == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        return auth.updateEmail(me.userId(), req);
+    }
+
+    @PostMapping("/update-password")
+    public ResponseEntity<Void> updatePassword(@Valid @RequestBody UpdatePasswordRequest req) {
+        CcePrincipal me = CcePrincipal.current();
+        if (me == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        auth.updatePassword(me.userId(), req);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/me")
     public CcePrincipal me() {
         CcePrincipal me = CcePrincipal.current();

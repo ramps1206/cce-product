@@ -93,6 +93,33 @@ public class AuthService {
     }
 
     @Transactional
+    public AuthResponse updateEmail(String userId, UpdateEmailRequest req) {
+        AppUser user = users.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+        if (!encoder.matches(req.password(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "password does not match");
+        }
+        String newEmail = req.newEmail().trim().toLowerCase();
+        if (!newEmail.equals(user.getEmail()) && users.existsByEmail(newEmail)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "email already registered");
+        }
+        user.setEmail(newEmail);
+        user = users.save(user);
+        return toResponse(user, activeLicense(user));   // reissue token with the new email claim
+    }
+
+    @Transactional
+    public void updatePassword(String userId, UpdatePasswordRequest req) {
+        AppUser user = users.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+        if (!encoder.matches(req.currentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "current password is incorrect");
+        }
+        user.setPasswordHash(encoder.encode(req.newPassword()));
+        users.save(user);
+    }
+
+    @Transactional
     public void setPin(String userId, String pin) {
         AppUser user = users.findById(UUID.fromString(userId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));

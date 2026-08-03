@@ -23,6 +23,16 @@ public final class AuthDtos {
 
     public record SetPinRequest(@NotBlank String pin) {}
 
+    /** Change the logged-in user's login email (current password confirms identity). */
+    public record UpdateEmailRequest(
+            @Email @NotBlank String newEmail,
+            @NotBlank String password) {}
+
+    /** Change the logged-in user's password. */
+    public record UpdatePasswordRequest(
+            @NotBlank String currentPassword,
+            @NotBlank String newPassword) {}
+
     public record PinLoginRequest(
             @Email @NotBlank String email,
             @NotBlank String pin,

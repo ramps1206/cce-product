@@ -86,6 +86,12 @@ export const api = {
 
   me: () => req('/api/auth/me'),
 
+  updateEmail: (b: { newEmail: string; password: string }): Promise<AuthResponse> =>
+    req('/api/auth/update-email', { method: 'POST', body: JSON.stringify(b) }),
+
+  updatePassword: (b: { currentPassword: string; newPassword: string }): Promise<null> =>
+    req('/api/auth/update-password', { method: 'POST', body: JSON.stringify(b) }),
+
   pull: (since?: string): Promise<{ serverTime: string; items: SyncItem[] }> =>
     req('/api/sync/pull' + (since ? `?since=${encodeURIComponent(since)}` : '')),
 

@@ -5,16 +5,27 @@ import { getToken } from '../lib/api'
 import { PageHeader, Field, btnPrimary, btnGhost } from '../components/ui'
 
 const PIN_FLAG = 'cce_pin_set'
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function Account() {
-  const { auth } = useAuth()
+  const { auth, updateEmail, updatePassword } = useAuth()
   const [phone, setPhone] = useState('')
 
-  // Password change form (no backend yet — shows a graceful "coming soon" notice).
+  // Email change form.
+  const [showEmail, setShowEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailPwd, setEmailPwd] = useState('')
+  const [emailBusy, setEmailBusy] = useState(false)
+  const [emailMsg, setEmailMsg] = useState('')
+  const [emailErr, setEmailErr] = useState('')
+
+  // Password change form.
   const [showPwd, setShowPwd] = useState(false)
   const [curPwd, setCurPwd] = useState('')
   const [newPwd, setNewPwd] = useState('')
   const [confirmPwd, setConfirmPwd] = useState('')
+  const [pwdBusy, setPwdBusy] = useState(false)
+  const [pwdMsg, setPwdMsg] = useState('')
   const [pwdNotice, setPwdNotice] = useState('')
 
   // Quick PIN unlock.
@@ -37,9 +48,70 @@ export default function Account() {
     }
   }, [])
 
-  function submitPwd(e: React.FormEvent) {
+  async function submitEmail(e: React.FormEvent) {
     e.preventDefault()
-    setPwdNotice('हे वैशिष्ट्य लवकरच येत आहे 🚧')
+    setEmailErr('')
+    setEmailMsg('')
+    const em = newEmail.trim().toLowerCase()
+    if (!EMAIL_RE.test(em)) {
+      setEmailErr('कृपया वैध Email टाका (उदा. name@example.com).')
+      return
+    }
+    if (em === (auth?.email ?? '')) {
+      setEmailErr('हा तर सध्याचाच Email आहे.')
+      return
+    }
+    if (!emailPwd) {
+      setEmailErr('पुष्टीसाठी सध्याचा पासवर्ड टाका.')
+      return
+    }
+    setEmailBusy(true)
+    try {
+      await updateEmail(em, emailPwd)
+      setEmailMsg('✅ Email बदलले. पुढच्या वेळी नवीन Email ने Login करा.')
+      setShowEmail(false)
+      setNewEmail('')
+      setEmailPwd('')
+    } catch (err: any) {
+      setEmailErr(
+        err?.status === 409
+          ? 'हा Email आधीच नोंदणीकृत आहे.'
+          : err?.status === 401
+            ? 'पासवर्ड चुकीचा आहे.'
+            : 'Email बदलता आले नाही. पुन्हा प्रयत्न करा.'
+      )
+    } finally {
+      setEmailBusy(false)
+    }
+  }
+
+  async function submitPwd(e: React.FormEvent) {
+    e.preventDefault()
+    setPwdNotice('')
+    setPwdMsg('')
+    if (newPwd.length < 6) {
+      setPwdNotice('नवीन पासवर्ड किमान 6 अक्षरांचा हवा.')
+      return
+    }
+    if (newPwd !== confirmPwd) {
+      setPwdNotice('नवीन पासवर्ड जुळत नाहीत.')
+      return
+    }
+    setPwdBusy(true)
+    try {
+      await updatePassword(curPwd, newPwd)
+      setPwdMsg('✅ पासवर्ड बदलला.')
+      setShowPwd(false)
+      setCurPwd('')
+      setNewPwd('')
+      setConfirmPwd('')
+    } catch (err: any) {
+      setPwdNotice(
+        err?.status === 401 ? 'सध्याचा पासवर्ड चुकीचा आहे.' : 'पासवर्ड बदलता आला नाही.'
+      )
+    } finally {
+      setPwdBusy(false)
+    }
   }
 
   async function submitPin(e: React.FormEvent) {
@@ -86,15 +158,62 @@ export default function Account() {
     <div>
       <PageHeader title="🔐 खाते सुरक्षा (Account Security)" />
 
-      {/* Section 1: Credentials + password change */}
+      {/* Section 1: Credentials + email/password change */}
       <div className="bg-card border border-bdr rounded-xl p-5 mb-4 max-w-[520px]">
-        <Field label="नोंदणीकृत Email" value={auth?.email ?? ''} onChange={() => {}} />
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <Field label="नोंदणीकृत Email" value={auth?.email ?? ''} onChange={() => {}} />
+          </div>
+          {!showEmail && (
+            <button
+              type="button"
+              className={btnGhost + ' mb-3 whitespace-nowrap'}
+              onClick={() => {
+                setShowEmail(true)
+                setNewEmail('')
+                setEmailPwd('')
+                setEmailErr('')
+                setEmailMsg('')
+              }}
+            >
+              ✏️ बदला
+            </button>
+          )}
+        </div>
+
+        {showEmail && (
+          <form onSubmit={submitEmail} className="mb-3 rounded-lg bg-slate-50 border border-bdr p-3">
+            <Field label="नवीन Email" type="email" value={newEmail} onChange={setNewEmail} placeholder="name@example.com" />
+            <Field label="पुष्टीसाठी सध्याचा पासवर्ड" type="password" value={emailPwd} onChange={setEmailPwd} />
+            {emailErr && <p className="text-xs text-red-600 mb-2">{emailErr}</p>}
+            <div className="flex gap-2">
+              <button type="submit" className={btnPrimary} disabled={emailBusy}>
+                {emailBusy ? 'बदलत आहे…' : 'Email बदला'}
+              </button>
+              <button
+                type="button"
+                className={btnGhost}
+                onClick={() => {
+                  setShowEmail(false)
+                  setNewEmail('')
+                  setEmailPwd('')
+                  setEmailErr('')
+                }}
+              >
+                रद्द
+              </button>
+            </div>
+          </form>
+        )}
+        {emailMsg && <p className="text-xs text-green-600 mb-3">{emailMsg}</p>}
+
         <Field label="नोंदणीकृत मोबाईल" value={phone} onChange={() => {}} />
 
         <p className="text-xs text-slate-500 mt-1 mb-3">
           🔑 पासवर्ड बदलण्यासाठी सध्याचा पासवर्ड आवश्यक असेल.
         </p>
 
+        {pwdMsg && <p className="text-xs text-green-600 mb-2">{pwdMsg}</p>}
         {!showPwd ? (
           <button
             type="button"
@@ -120,8 +239,8 @@ export default function Account() {
               <p className="text-xs text-amber-600 mb-2">{pwdNotice}</p>
             )}
             <div className="flex gap-2">
-              <button type="submit" className={btnPrimary}>
-                बदला
+              <button type="submit" className={btnPrimary} disabled={pwdBusy}>
+                {pwdBusy ? 'बदलत आहे…' : 'बदला'}
               </button>
               <button
                 type="button"
