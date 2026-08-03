@@ -59,7 +59,7 @@ public class AuthService {
         lic.setTier("trial");
         lic.setStatus("active");
         lic.setPlatform(req.platform() == null ? "both" : req.platform());
-        lic.setMaxDevices(2);
+        lic.setMaxDevices(5);
         lic.setTrialEndsAt(OffsetDateTime.now().plusDays(TRIAL_DAYS));
         lic = licenses.save(lic);
 
@@ -137,9 +137,13 @@ public class AuthService {
             devices.save(existing.get());
             return;
         }
-        if (devices.countByLicenseId(lic.getId()) >= lic.getMaxDevices()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "device limit reached (" + lic.getMaxDevices() + ") for this license");
+        // At the device cap: rotate out the least-recently-seen device rather
+        // than hard-blocking the login. Enforces the concurrent-device count
+        // without ever locking a legitimate user out of their own school.
+        List<Device> existingDevices = devices.findByLicenseIdOrderByLastSeenAscNullsFirst(lic.getId());
+        int overBy = existingDevices.size() - lic.getMaxDevices() + 1;
+        for (int i = 0; i < overBy && i < existingDevices.size(); i++) {
+            devices.delete(existingDevices.get(i));
         }
         Device d = new Device();
         d.setLicense(lic);

@@ -3,10 +3,14 @@ package org.cce.repo;
 import org.cce.domain.Device;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface DeviceRepo extends JpaRepository<Device, UUID> {
     Optional<Device> findByLicenseIdAndDeviceId(UUID licenseId, String deviceId);
     long countByLicenseId(UUID licenseId);
+
+    /** Devices for a license, least-recently-seen first (nulls first) — for LRU rotation. */
+    List<Device> findByLicenseIdOrderByLastSeenAscNullsFirst(UUID licenseId);
 }
