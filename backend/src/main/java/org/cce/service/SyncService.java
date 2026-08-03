@@ -59,7 +59,7 @@ public class SyncService {
             jdbc.query(sql, (RowCallbackHandler) rs ->
                 out.add(new SyncItem(
                         part,
-                        String.valueOf(rs.getLong("client_id")),
+                        rs.getString("client_id"),
                         readJson(rs.getString("payload")),
                         rs.getObject("updated_at", OffsetDateTime.class),
                         rs.getBoolean("deleted"))),
@@ -94,10 +94,10 @@ public class SyncService {
             int rows;
 
             if (ARRAY_TABLES.containsKey(it.part())) {
-                long clientId;
-                try {
-                    clientId = Long.parseLong(it.key());
-                } catch (NumberFormatException e) {
+                // client_id is the app's native item id (alphanumeric string,
+                // e.g. "mretotk6ywn28oszy"); stored verbatim in a TEXT column.
+                String clientId = it.key();
+                if (clientId == null || clientId.isBlank()) {
                     rejected.add(new RejectedRef(it.part(), it.key()));
                     continue;
                 }
