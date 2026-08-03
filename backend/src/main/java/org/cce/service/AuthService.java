@@ -22,21 +22,29 @@ public class AuthService {
 
     private static final int TRIAL_DAYS = 15;
 
+    private static final int RESET_TTL_MINUTES = 30;
+
     private final SchoolRepo schools;
     private final AppUserRepo users;
     private final LicenseRepo licenses;
     private final DeviceRepo devices;
     private final PasswordEncoder encoder;
     private final JwtService jwt;
+    private final MailService mail;
+    private final String appUrl;
 
     public AuthService(SchoolRepo schools, AppUserRepo users, LicenseRepo licenses,
-                       DeviceRepo devices, PasswordEncoder encoder, JwtService jwt) {
+                       DeviceRepo devices, PasswordEncoder encoder, JwtService jwt,
+                       MailService mail,
+                       @org.springframework.beans.factory.annotation.Value("${cce.app-url:https://cce-product.onrender.com}") String appUrl) {
         this.schools = schools;
         this.users = users;
         this.licenses = licenses;
         this.devices = devices;
         this.encoder = encoder;
         this.jwt = jwt;
+        this.mail = mail;
+        this.appUrl = appUrl;
     }
 
     @Transactional
@@ -119,6 +127,55 @@ public class AuthService {
         }
         user.setPasswordHash(encoder.encode(req.newPassword()));
         users.save(user);
+    }
+
+    /**
+     * Start a password reset. Always succeeds from the caller's view (never
+     * reveals whether the email exists). If the account exists, stores a hashed
+     * one-time token and emails the reset link.
+     */
+    @Transactional
+    public void forgotPassword(String email) {
+        var opt = users.findByEmail(email.trim().toLowerCase());
+        if (opt.isEmpty()) return;                 // silent — no account enumeration
+        AppUser user = opt.get();
+        String rawToken = randomToken();
+        user.setResetTokenHash(sha256Hex(rawToken));
+        user.setResetTokenExpiresAt(OffsetDateTime.now().plusMinutes(RESET_TTL_MINUTES));
+        users.save(user);
+        String resetUrl = appUrl + "/reset?token=" + rawToken;
+        mail.sendPasswordReset(user.getEmail(), resetUrl);
+    }
+
+    /** Complete a password reset using the emailed token. */
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        AppUser user = users.findByResetTokenHash(sha256Hex(token))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid or used reset link"));
+        if (user.getResetTokenExpiresAt() == null
+                || user.getResetTokenExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reset link has expired");
+        }
+        user.setPasswordHash(encoder.encode(newPassword));
+        user.setResetTokenHash(null);              // single use
+        user.setResetTokenExpiresAt(null);
+        users.save(user);
+    }
+
+    private static String randomToken() {
+        byte[] b = new byte[32];
+        new java.security.SecureRandom().nextBytes(b);
+        return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(b);
+    }
+
+    private static String sha256Hex(String s) {
+        try {
+            byte[] d = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(s.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(d);
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Transactional

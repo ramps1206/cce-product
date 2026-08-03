@@ -1,23 +1,36 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 
 export default function Login() {
   const { login, register } = useAuth()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [schoolName, setSchoolName] = useState('')
   const [udise, setUdise] = useState('')
   const [err, setErr] = useState('')
+  const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+
+  function switchMode(m: 'login' | 'register' | 'forgot') {
+    setMode(m)
+    setErr('')
+    setNotice('')
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setErr('')
+    setNotice('')
     setBusy(true)
     try {
       if (mode === 'login') await login(email, password)
-      else await register(email, password, schoolName, udise || undefined)
+      else if (mode === 'register') await register(email, password, schoolName, udise || undefined)
+      else {
+        await api.forgotPassword(email)
+        setNotice('जर हा Email नोंदणीकृत असेल, तर रीसेट लिंक पाठवली आहे. कृपया तुमचा Email तपासा (Spam फोल्डरही).')
+      }
     } catch (e: any) {
       setErr(e.message || 'त्रुटी')
     } finally {
@@ -43,31 +56,56 @@ export default function Login() {
           </>
         )}
         <Field label="ईमेल" type="email" value={email} onChange={setEmail} required />
-        <Field label="पासवर्ड" type="password" value={password} onChange={setPassword} required />
+        {mode !== 'forgot' && (
+          <Field label="पासवर्ड" type="password" value={password} onChange={setPassword} required />
+        )}
+
+        {mode === 'login' && (
+          <div className="-mt-2 mb-3 text-right">
+            <button
+              type="button"
+              className="text-xs text-sf font-semibold hover:underline"
+              onClick={() => switchMode('forgot')}
+            >
+              पासवर्ड विसरलात?
+            </button>
+          </div>
+        )}
+        {mode === 'forgot' && (
+          <p className="text-xs text-slate-500 mb-3">
+            नोंदणीकृत Email टाका — आम्ही पासवर्ड रीसेट करण्यासाठी लिंक पाठवू.
+          </p>
+        )}
 
         {err && <p className="text-sm text-red-600 mb-3">{err}</p>}
+        {notice && <p className="text-sm text-green-600 mb-3">{notice}</p>}
 
         <button
           type="submit"
           disabled={busy}
           className="w-full py-2.5 rounded-lg bg-sf text-white font-semibold hover:bg-sf/90 disabled:opacity-50"
         >
-          {busy ? '…' : mode === 'login' ? 'लॉगिन' : 'नोंदणी करा'}
+          {busy ? '…' : mode === 'login' ? 'लॉगिन' : mode === 'register' ? 'नोंदणी करा' : 'रीसेट लिंक पाठवा'}
         </button>
 
-        <p className="text-center text-sm text-slate-500 mt-4">
-          {mode === 'login' ? 'नवीन शाळा?' : 'खाते आहे?'}{' '}
-          <button
-            type="button"
-            className="text-sf font-semibold"
-            onClick={() => {
-              setMode(mode === 'login' ? 'register' : 'login')
-              setErr('')
-            }}
-          >
-            {mode === 'login' ? 'नोंदणी करा' : 'लॉगिन'}
-          </button>
-        </p>
+        {mode === 'forgot' ? (
+          <p className="text-center text-sm text-slate-500 mt-4">
+            <button type="button" className="text-sf font-semibold" onClick={() => switchMode('login')}>
+              ← लॉगिनला परत जा
+            </button>
+          </p>
+        ) : (
+          <p className="text-center text-sm text-slate-500 mt-4">
+            {mode === 'login' ? 'नवीन शाळा?' : 'खाते आहे?'}{' '}
+            <button
+              type="button"
+              className="text-sf font-semibold"
+              onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+            >
+              {mode === 'login' ? 'नोंदणी करा' : 'लॉगिन'}
+            </button>
+          </p>
+        )}
       </form>
     </div>
   )

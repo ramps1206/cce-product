@@ -58,6 +58,18 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        auth.forgotPassword(req.email());
+        return ResponseEntity.noContent().build();   // always 204 — never reveal if the email exists
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        auth.resetPassword(req.token(), req.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/me")
     public CcePrincipal me() {
         CcePrincipal me = CcePrincipal.current();

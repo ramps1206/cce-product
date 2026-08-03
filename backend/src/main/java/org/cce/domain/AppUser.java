@@ -27,6 +27,12 @@ public class AppUser {
     @Column(name = "pin_hash")
     private String pinHash;
 
+    @Column(name = "reset_token_hash")
+    private String resetTokenHash;
+
+    @Column(name = "reset_token_expires_at")
+    private OffsetDateTime resetTokenExpiresAt;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -34,6 +40,10 @@ public class AppUser {
     private OffsetDateTime updatedAt = OffsetDateTime.now();
 
     public UUID getId() { return id; }
+    public String getResetTokenHash() { return resetTokenHash; }
+    public void setResetTokenHash(String v) { this.resetTokenHash = v; }
+    public OffsetDateTime getResetTokenExpiresAt() { return resetTokenExpiresAt; }
+    public void setResetTokenExpiresAt(OffsetDateTime v) { this.resetTokenExpiresAt = v; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPasswordHash() { return passwordHash; }

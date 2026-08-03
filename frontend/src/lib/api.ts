@@ -92,6 +92,12 @@ export const api = {
   updatePassword: (b: { currentPassword: string; newPassword: string }): Promise<null> =>
     req('/api/auth/update-password', { method: 'POST', body: JSON.stringify(b) }),
 
+  forgotPassword: (email: string): Promise<null> =>
+    req('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+
+  resetPassword: (token: string, newPassword: string): Promise<null> =>
+    req('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) }),
+
   pull: (since?: string): Promise<{ serverTime: string; items: SyncItem[] }> =>
     req('/api/sync/pull' + (since ? `?since=${encodeURIComponent(since)}` : '')),
 

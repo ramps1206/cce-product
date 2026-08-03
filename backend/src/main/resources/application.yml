@@ -23,6 +23,19 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+  # SMTP for password-reset emails. Optional: if MAIL_HOST is unset the reset
+  # flow still works but logs the link instead of sending it (see MailService).
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:true}
 
 # App config (env-overridable for prod)
 cce:
@@ -32,6 +45,10 @@ cce:
     access-token-minutes: 720
   cors:
     allowed-origins: ${CCE_CORS_ORIGINS:http://localhost:5173}
+  # Public URL used to build password-reset links in emails.
+  app-url: ${CCE_APP_URL:https://cce-product.onrender.com}
+  mail:
+    from: ${MAIL_FROM:CCE Software <no-reply@cce.local>}
 
 management:
   endpoints:

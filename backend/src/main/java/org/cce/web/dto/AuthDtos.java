@@ -33,6 +33,14 @@ public final class AuthDtos {
             @NotBlank String currentPassword,
             @NotBlank String newPassword) {}
 
+    /** Start a password reset: email a one-time link. */
+    public record ForgotPasswordRequest(@Email @NotBlank String email) {}
+
+    /** Complete a password reset using the emailed token. */
+    public record ResetPasswordRequest(
+            @NotBlank String token,
+            @NotBlank String newPassword) {}
+
     public record PinLoginRequest(
             @Email @NotBlank String email,
             @NotBlank String pin,
