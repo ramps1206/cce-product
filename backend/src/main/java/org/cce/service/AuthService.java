@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -167,10 +169,14 @@ public class AuthService {
         // At the device cap: rotate out the least-recently-seen device rather
         // than hard-blocking the login. Enforces the concurrent-device count
         // without ever locking a legitimate user out of their own school.
-        List<Device> existingDevices = devices.findByLicenseIdOrderByLastSeenAscNullsFirst(lic.getId());
+        List<Device> existingDevices = new ArrayList<>(devices.findByLicenseId(lic.getId()));
         int overBy = existingDevices.size() - lic.getMaxDevices() + 1;
-        for (int i = 0; i < overBy && i < existingDevices.size(); i++) {
-            devices.delete(existingDevices.get(i));
+        if (overBy > 0) {
+            existingDevices.sort(Comparator.comparing(
+                    Device::getLastSeen, Comparator.nullsFirst(Comparator.naturalOrder())));
+            for (int i = 0; i < overBy && i < existingDevices.size(); i++) {
+                devices.delete(existingDevices.get(i));
+            }
         }
         Device d = new Device();
         d.setLicense(lic);

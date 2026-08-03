@@ -11,6 +11,6 @@ public interface DeviceRepo extends JpaRepository<Device, UUID> {
     Optional<Device> findByLicenseIdAndDeviceId(UUID licenseId, String deviceId);
     long countByLicenseId(UUID licenseId);
 
-    /** Devices for a license, least-recently-seen first (nulls first) — for LRU rotation. */
-    List<Device> findByLicenseIdOrderByLastSeenAscNullsFirst(UUID licenseId);
+    /** All devices for a license (ordering / LRU selection done in the service). */
+    List<Device> findByLicenseId(UUID licenseId);
 }
